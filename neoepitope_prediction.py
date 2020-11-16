@@ -98,10 +98,10 @@ def main(args):
                 if args.quant_fn: #If there's the TPM file available
                     filtered_df = filtering_peptide.binding_stability_filtering(args.binding_threshold, args.stability_threshold)
                     results = filtering_peptide.tpm_filtering(tpm_dict=tpm_dict, filtered_df=filtered_df, tpm_threshold=args.tpm_threshold)
-                    results.to_csv(os.path.join(args.data_dir, args.sample_id, "filtered_neoepitopes.tsv"), sep="\t", index=False)
+                    results.to_csv(os.path.join(args.data_dir, args.sample_id, hla + "_" + mer + "_mers_filtered_neoepitopes.tsv"), sep="\t", index=False)
                 else:
                     results = filtering_peptide.binding_stability_filtering(args.binding_threshold, args.stability_threshold)
-                    results.to_csv(os.path.join(args.data_dir, args.sample_id, "filtered_neoepitopes_no_tpm.tsv"), sep="\t", index=False)
+                    results.to_csv(os.path.join(args.data_dir, args.sample_id, hla + "_" + mer + "_mers_filtered_neoepitopes_no_tpm.tsv"), sep="\t", index=False)
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Filter neoepitopes based on threshold defined by Wells et al. 2020")

@@ -13,6 +13,9 @@ git clone https://github.com/tanyaphung/neoantigens_prioritization.git
 - Each sample has its own directory, for example: `patient_3466` (under the directory `example_data`)
     - Sub-directories inside the sample directory are the directories of the HLAs, for example: `HLA-A01-01`. The directory name of the HLA must match with the hla file for use as argument to the script.
         - Sub-directories inside the HLA directory are called `9_mers` or `10_mers` or `11_mers`
+        - Inside sub-directory `9_mers` (or `10_mers`), there have to be 2 files:
+          - `netmhc.xsl`: output from netMHCpan4.0. Modify line 90 if your file is not in this format.
+          - `netmhcstab.xsl`:output from netMHCpanstab. Modify line 91 if your file is not in this format. 
 
 ### Usage:
 
