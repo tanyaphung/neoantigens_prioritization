@@ -10,8 +10,8 @@ git clone https://github.com/tanyaphung/neoantigens_prioritization.git
 - Pandas version 1.1.3
 
 ### Directory structure
-- Each sample has its own directory, for example: `patient_3466`
-    - Sub-directories inside the sample directory are the directories of the HLAs, for example: `HLA-A01:01`. The directory name of the HLA must match with the hla file for use as argument to the script.
+- Each sample has its own directory, for example: `patient_3466` (under the directory `example_data`)
+    - Sub-directories inside the sample directory are the directories of the HLAs, for example: `HLA-A01-01`. The directory name of the HLA must match with the hla file for use as argument to the script.
         - Sub-directories inside the HLA directory are called `9_mers` or `10_mers` or `11_mers`
 
 ### Usage:
