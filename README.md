@@ -30,7 +30,7 @@ python neoepitope_prediction.py --hla_types_fn example_data/patient_3466/hla.txt
 
 ### Required inputs
 - `--hla_types`: this is a file listing each HLA type per line. The name of the HLA type must match with the subdirectory inside the sample directory
-- `sample_id`: sample id must match the sample directory
+- `--sample_id`: sample id must match the sample directory
 - `--mers`: Enter a number (eg: 9) or a list of numbers 9,10,11
 - `--data_dir`: Enter the parent directory that hosts all the data. For example, because the directory `patient_3466` is under the directory `example_data`, give the path to the `example_data` directory.
 
