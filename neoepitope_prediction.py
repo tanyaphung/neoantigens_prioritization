@@ -21,9 +21,7 @@ class ParseExpression:
         return tpm_dict
 
 class FilterPeptide:
-    def __init__(self, binding_fn, stability_fn, hla, sample_id):
-        self.binding_fn = binding_fn
-        self.stability_fn = stability_fn
+    def __init__(self, hla, sample_id):
         self.hla = hla
         self.sample_id = sample_id
     def clean_gene_name(self, gene_name):
@@ -33,18 +31,35 @@ class FilterPeptide:
         :return:
         """
         return gene_name.split("_")[0][1:]
-    def binding_stability_filtering(self, binding_thresold, stability_threshold):
+
+    def binding_filtering(self, binding_fn, binding_thresold):
+        """
+        Filtering based on MHC binding affinity by using pandas
+        :return:
+        """
+        binding_df = pd.read_csv(binding_fn, skiprows=1, sep="\t")
+        # print(len(binding_df.index))
+        binding_df_rmdups = binding_df.drop_duplicates(subset=["Peptide", "ID"])
+        # print(len(binding_df_rmdups.index))
+
+        filtered = binding_df_rmdups[(binding_df_rmdups["nM"] < binding_thresold)]
+        filtered_clean = filtered[["Peptide", "ID", "nM"]]
+
+        return filtered_clean
+
+
+    def binding_stability_filtering(self, binding_fn, stability_fn, binding_thresold, stability_threshold):
         """
         Filtering based on MHC binding affinity and MHC stability by using pandas
         :return:
         """
-        binding_df = pd.read_csv(self.binding_fn, skiprows=1, sep="\t")
+        binding_df = pd.read_csv(binding_fn, skiprows=1, sep="\t")
         # print(len(binding_df.index))
         binding_df_rmdups = binding_df.drop_duplicates(subset=["Peptide", "ID"])
         # print(len(binding_df_rmdups.index))
 
 
-        stability_df = pd.read_csv(self.stability_fn, skiprows=1, sep="\t")
+        stability_df = pd.read_csv(stability_fn, skiprows=1, sep="\t")
         # print(len(stability_df.index))
         stability_df_rmdups = stability_df.drop_duplicates(subset=["Peptide", "ID"])
         # print(len(stability_df_rmdups.index))
@@ -89,19 +104,24 @@ def main(args):
         for mer in mers:
             netmhc_fn = os.path.join(args.data_dir, args.sample_id, hla, mer + "_mers", "netmhc.xsl")
             netmhcstab_fn = os.path.join(args. data_dir, args.sample_id, hla, mer + "_mers", "netmhcstab.xsl")
-            if not os.path.exists (netmhc_fn) or not os.path.exists(netmhcstab_fn): #Check if there's a file for netmhc and netmhcstab
-                print("The netmhc file and/or netmhc stability file could not be found. Please check the readme for the directory structure. Existing")
-                exit()
-            else:
-                filtering_peptide = FilterPeptide(binding_fn=netmhc_fn, stability_fn=netmhcstab_fn, hla=hla,
-                                                  sample_id=args.sample_id)
+            filtering_peptide = FilterPeptide(hla=hla,
+                                              sample_id=args.sample_id)
+            if os.path.exists(netmhc_fn) and os.path.exists(netmhcstab_fn): #Check if there's a file for netmhc and netmhcstab
+
                 if args.quant_fn: #If there's the TPM file available
-                    filtered_df = filtering_peptide.binding_stability_filtering(args.binding_threshold, args.stability_threshold)
+                    filtered_df = filtering_peptide.binding_stability_filtering(binding_fn=netmhc_fn, stability_fn=netmhcstab_fn, binding_thresold=args.binding_threshold, stability_threshold=args.stability_threshold)
                     results = filtering_peptide.tpm_filtering(tpm_dict=tpm_dict, filtered_df=filtered_df, tpm_threshold=args.tpm_threshold)
                     results.to_csv(os.path.join(args.data_dir, args.sample_id, hla + "_" + mer + "_mers_filtered_neoepitopes.tsv"), sep="\t", index=False)
                 else:
-                    results = filtering_peptide.binding_stability_filtering(args.binding_threshold, args.stability_threshold)
+                    results = filtering_peptide.binding_stability_filtering(binding_fn=netmhc_fn, stability_fn=netmhcstab_fn, binding_thresold=args.binding_threshold, stability_threshold=args.stability_threshold)
                     results.to_csv(os.path.join(args.data_dir, args.sample_id, hla + "_" + mer + "_mers_filtered_neoepitopes_no_tpm.tsv"), sep="\t", index=False)
+            elif os.path.exists(netmhc_fn) and not os.path.exists(netmhcstab_fn):
+                results = filtering_peptide.binding_filtering(binding_fn=netmhc_fn,
+                                                                        binding_thresold=args.binding_threshold)
+                results.to_csv(os.path.join(args.data_dir, args.sample_id,
+                                            hla + "_" + mer + "_mers_filtered_neoepitopes_binding_only.tsv"), sep="\t",
+                               index=False)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Filter neoepitopes based on threshold defined by Wells et al. 2020")
